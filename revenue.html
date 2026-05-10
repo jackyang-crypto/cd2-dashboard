@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>成都第二分公司 4月流水波动诊断 - 四层下钻</title>
+ <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+ <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ body { font-family: -apple-system, 'PingFang SC', '微软雅黑', sans-serif; background: #f5f7fa; color: #2c3e50; }
+
+ .header {
+   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+   padding: 22px 40px;
+   display: flex; justify-content: space-between; align-items: center;
+ }
+ .header h1 { font-size: 22px; color: #fff; font-weight: 600; }
+ .header .subtitle { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 4px; }
+
+ .breadcrumb {
+   background: #fff;
+   padding: 12px 40px;
+   display: flex; align-items: center; gap: 8px;
+   border-bottom: 1px solid #e8ecf1;
+   font-size: 14px;
+   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+ }
+ .breadcrumb-item {
+   color: #667eea;
+   cursor: pointer;
+   padding: 4px 12px;
+   border-radius: 6px;
+   transition: all 0.2s;
+ }
+ .breadcrumb-item:hover { background: #f0f2ff; }
+ .breadcrumb-item.active { color: #fff; background: #667eea; cursor: default; }
+ .breadcrumb-sep { color: #bbb; }
+
+ .main { display: flex; height: calc(100vh - 125px); }
+
+ .sidebar {
+   width: 280px;
+   background: #fff;
+   border-right: 1px solid #e8ecf1;
+   overflow-y: auto;
+   padding: 15px;
+ }
+ .sidebar-title {
+   font-size: 12px;
+   color: #8899aa;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+   margin-bottom: 12px;
+   padding-bottom: 8px;
+   border-bottom: 1px solid #e8ecf1;
+ }
+ .sidebar-item {
+   padding: 10px 14px;
+   border-radius: 8px;
+   cursor: pointer;
+   transition: all 0.2s;
+   margin-bottom: 4px;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+ }
+ .sidebar-item:hover { background: #f0f2ff; }
+ .sidebar-item.active { background: #eef0ff; border-left: 3px solid #667eea; }
+ .sidebar-item .name { font-size: 14px; color: #2c3e50; font-weight: 500; }
+ .sidebar-item .sub-id { font-size: 11px; color: #a0aec0; margin-top: 1px; }
+ .sidebar-item .value { font-size: 12px; color: #8899aa; margin-top: 2px; }
+ .sidebar-item .badge {
+   font-size: 10px;
+   padding: 2px 8px;
+   border-radius: 10px;
+   font-weight: 600;
+   white-space: nowrap;
+ }
+ .badge-high { background: #e6f9f0; color: #27ae60; }
+ .badge-mid { background: #fff8e6; color: #e67e22; }
+ .badge-low { background: #fde8e8; color: #e74c3c; }
+
+ .chart-area {
+   flex: 1;
+   padding: 20px;
+   display: flex;
+   flex-direction: column;
+   background: #f5f7fa;
+ }
+
+ .chart-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 15px;
+ }
+ .chart-title { font-size: 18px; font-weight: 600; color: #2c3e50; }
+ .chart-desc { font-size: 12px; color: #8899aa; margin-top: 4px; }
+
+ .chart-actions { display: flex; gap: 8px; }
+ .chart-actions button {
+   padding: 6px 16px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   background: #fff;
+   color: #4a5568;
+   cursor: pointer;
+   font-size: 12px;
+   transition: all 0.2s;
+ }
+ .chart-actions button:hover { border-color: #667eea; color: #667eea; }
+ .chart-actions button.active { background: #667eea; border-color: #667eea; color: #fff; }
+
+ .chart-wrap {
+   flex: 1;
+   background: #fff;
+   border-radius: 12px;
+   padding: 16px;
+   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+   min-height: 400px;
+   display: flex;
+   flex-direction: column;
+ }
+ #mainChart { flex: 1; min-height: 380px; }
+
+ .stats-bar {
+   display: flex; gap: 14px; margin-top: 14px;
+ }
+ .stat-card {
+   flex: 1;
+   background: #fff;
+   padding: 14px 18px;
+   border-radius: 10px;
+   text-align: center;
+   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+ }
+ .stat-value { font-size: 20px; font-weight: 700; color: #667eea; }
+ .stat-label { font-size: 11px; color: #8899aa; margin-top: 4px; }
+
+ ::-webkit-scrollbar { width: 5px; }
+ ::-webkit-scrollbar-track { background: #f5f7fa; }
+ ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+ ::-webkit-scrollbar-thumb:hover { background: #667eea; }
+
+ @media (max-width: 768px) {
+   .main { flex-direction: column; height: auto; }
+   .sidebar { width: 100%; max-height: 200px; border-right: none; border-bottom: 1px solid #e8ecf1; }
+   .header { padding: 16px 20px; }
+   .breadcrumb { padding: 10px 20px; }
+   .chart-area { padding: 12px; }
+ }
+ </style>
+</head>
+<body>
+ <div class="header">
+   <div>
+     <h1>📊 成都第二分公司 · 4月流水波动诊断</h1>
+     <div class="subtitle">四层下钻：分公司 → 小组 → 运营 → 主播 | 2026-04-01 至 2026-04-30</div>
+   </div>
+   <div class="chart-actions">
+     <button onclick="setChartType('line')" class="active" id="btnLine">📈 折线图</button>
+     <button onclick="setChartType('bar')" id="btnBar">📊 柱状图</button>
+     <button onclick="setChartType('area')" id="btnArea">🏔️ 面积图</button>
+   </div>
+ </div>
+
+ <div class="breadcrumb" id="breadcrumb">
+   <span class="breadcrumb-item active">🏢 成都第二分公司</span>
+ </div>
+
+ <div class="main">
+   <div class="sidebar" id="sidebar"></div>
+   <div class="chart-area">
+     <div class="chart-header">
+       <div>
+         <div class="chart-title" id="chartTitle">成都第二分公司 · 每日流水趋势</div>
+         <div class="chart-desc" id="chartDesc">点击左侧小组名称或双击折线下钻 · 单击折线高亮</div>
+       </div>
+     </div>
+     <div class="chart-wrap">
+       <div id="mainChart"></div>
+     </div>
+     <div class="stats-bar" id="statsBar"></div>
+   </div>
+ </div>
+
+ <script>
+ let DATA = null;
+ let chart = null;
+ let currentLevel = 'branch';
+ let currentGroup = null;
+ let currentOperator = null;
+ let chartType = 'line';
+ let highlightedSeries = null;
+
+ const COLORS = [
+   '#667eea', '#27ae60', '#e74c3c', '#f39c12', '#3498db',
+   '#9b59b6', '#1abc9c', '#e67e22', '#2ecc71', '#e91e63',
+   '#00bcd4', '#ff5722', '#795548', '#607d8b', '#8bc34a',
+   '#ff9800', '#673ab7', '#009688', '#cddc39', '#03a9f4',
+ ];
+
+ const DATA_EMBEDDED = __DATA_PLACEHOLDER__;
+
+ DATA = DATA_EMBEDDED;
+ document.addEventListener('DOMContentLoaded', function() {
+   chart = echarts.init(document.getElementById('mainChart'));
+   renderBranchLevel();
+   window.addEventListener('resize', () => chart.resize());
+ });
+
+ function fmt(v) {
+   if (v >= 10000) return (v/10000).toFixed(1) + '万';
+   return v.toLocaleString() + '元';
+ }
+ function fmtDate(d) { return d.replace('2026-04-', '4/'); }
+ function calcCV(arr) {
+   const nz = arr.filter(v => v > 0);
+   if (nz.length < 2) return 0;
+   const m = nz.reduce((a,b) => a+b, 0) / nz.length;
+   const s = Math.sqrt(nz.reduce((a,b) => a + Math.pow(b-m, 2), 0) / nz.length);
+   return m > 0 ? (s/m*100) : 0;
+ }
+ function cvBadge(cv) {
+   if (cv < 30) return { text: '低波动', cls: 'badge-high' };
+   if (cv < 80) return { text: '中波动', cls: 'badge-mid' };
+   return { text: '高波动', cls: 'badge-low' };
+ }
+ function makeTooltip(params) {
+   let h = `<div style="font-weight:600;margin-bottom:6px">${params[0].name}</div>`;
+   const s = [...params].sort((a,b) => b.value - a.value).filter(p => p.value > 0);
+   s.slice(0, 12).forEach(p => {
+     h += `<div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:13px">
+       <span>${p.marker} ${p.seriesName}</span>
+       <span style="font-weight:600">¥${p.value.toLocaleString()}</span></div>`;
+   });
+   if (s.length > 12) h += `<div style="color:#999;margin-top:4px">...还有 ${s.length-12} 项</div>`;
+   return h;
+ }
+
+ // ============ Level 0: Branch ============
+ function renderBranchLevel() {
+   currentLevel = 'branch'; currentGroup = null; currentOperator = null; highlightedSeries = null;
+   const dates = DATA.dates.map(fmtDate);
+   const groups = Object.entries(DATA.groups).filter(([n]) => n !== '黄兴宇组').sort((a,b) => b[1].total - a[1].total);
+
+   // Sidebar
+   let sb = '<div class="sidebar-title">📋 各小组（按流水排序）</div>';
+   groups.forEach(([name, info]) => {
+     const cv = calcCV(info.daily);
+     const b = cvBadge(cv);
+     const ops = Object.keys(info.operators).length;
+     sb += `<div class="sidebar-item" onclick="drillToGroup('${name.replace(/'/g,"\\'")}')">
+       <div><div class="name">${name}</div>
+       <div class="value">¥${fmt(info.total)} · ${ops}人 · CV ${cv.toFixed(0)}%</div></div>
+       <span class="badge ${b.cls}">${b.text}</span></div>`;
+   });
+   document.getElementById('sidebar').innerHTML = sb;
+
+   document.getElementById('breadcrumb').innerHTML = '<span class="breadcrumb-item active">🏢 成都第二分公司</span>';
+   document.getElementById('chartTitle').textContent = '成都第二分公司 · 每日流水趋势';
+   document.getElementById('chartDesc').textContent = '总流水趋势 + 各小组堆叠 · 点击左侧或双击图表下钻到小组';
+
+   // Chart: branch total line + group stacked area
+   const series = [{
+     name: '分公司总计', type: 'line', data: DATA.branch_daily, smooth: true,
+     lineStyle: { width: 3, color: '#2c3e50' }, itemStyle: { color: '#2c3e50' },
+     symbol: 'circle', symbolSize: 5, z: 10
+   }];
+   groups.forEach(([name, info], i) => {
+     series.push({
+       name, type: 'line', stack: 'groups', data: info.daily, smooth: true,
+       lineStyle: { width: 0 }, symbol: 'none',
+       areaStyle: { opacity: 0.6 }, itemStyle: { color: COLORS[i % COLORS.length] },
+       emphasis: { focus: 'series' }
+     });
+   });
+
+   chart.setOption({
+     tooltip: { trigger: 'axis', formatter: makeTooltip },
+     legend: { data: ['分公司总计', ...groups.map(([n])=>n)], textStyle: { fontSize: 11, color: '#666' }, top: 5, type: 'scroll' },
+     grid: { left: '3%', right: '3%', bottom: '10%', top: '50px', containLabel: true },
+     xAxis: { type: 'category', data: dates, axisLabel: { color: '#888', fontSize: 11, rotate: 45 }, axisLine: { lineStyle: { color: '#ddd' } } },
+     yAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => fmt(v) }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+     series,
+     dataZoom: [
+       { type: 'inside', start: 0, end: 100 },
+       { type: 'slider', start: 0, end: 100, height: 20, bottom: 5, borderColor: '#ddd', fillerColor: 'rgba(102,126,234,0.15)', handleStyle: { color: '#667eea' }, textStyle: { color: '#888' } }
+     ]
+   }, true);
+   chart.off('dblclick');
+   chart.on('dblclick', p => { if (p.seriesName && DATA.groups[p.seriesName]) drillToGroup(p.seriesName); });
+
+   const cv = calcCV(DATA.branch_daily);
+   document.getElementById('statsBar').innerHTML = `
+     <div class="stat-card"><div class="stat-value">¥${fmt(DATA.branch_total)}</div><div class="stat-label">4月总流水</div></div>
+     <div class="stat-card"><div class="stat-value">¥${fmt(DATA.branch_total/30)}</div><div class="stat-label">日均流水</div></div>
+     <div class="stat-card"><div class="stat-value">${groups.length}</div><div class="stat-label">活跃小组</div></div>
+     <div class="stat-card"><div class="stat-value">${DATA.total_anchors}</div><div class="stat-label">开播主播</div></div>
+     <div class="stat-card"><div class="stat-value">${cv.toFixed(1)}%</div><div class="stat-label">整体波动率</div></div>`;
+ }
+
+ // ============ Level 1: Group ============
+ function drillToGroup(groupName) {
+   currentLevel = 'group'; currentGroup = groupName; currentOperator = null; highlightedSeries = null;
+   const gi = DATA.groups[groupName];
+   const ops = Object.entries(gi.operators).sort((a,b) => b[1].total - a[1].total);
+   const dates = DATA.dates.map(fmtDate);
+
+   let sb = `<div class="sidebar-title">👤 ${groupName} · 运营列表</div>`;
+   ops.forEach(([name, info]) => {
+     const cv = calcCV(info.daily);
+     const b = cvBadge(cv);
+     const ac = Object.keys(info.anchors).length;
+     sb += `<div class="sidebar-item" onclick="drillToOperator('${name.replace(/'/g,"\\'")}')">
+       <div><div class="name">${name}</div>
+       <div class="value">¥${fmt(info.total)} · ${ac}人 · CV ${cv.toFixed(0)}%</div></div>
+       <span class="badge ${b.cls}">${b.text}</span></div>`;
+   });
+   document.getElementById('sidebar').innerHTML = sb;
+
+   document.getElementById('breadcrumb').innerHTML = `
+     <span class="breadcrumb-item" onclick="renderBranchLevel()">🏢 成都第二</span>
+     <span class="breadcrumb-sep">›</span>
+     <span class="breadcrumb-item active">👥 ${groupName}</span>`;
+   document.getElementById('chartTitle').textContent = `${groupName} · 各运营每日流水`;
+   document.getElementById('chartDesc').textContent = '点击左侧或双击折线下钻到主播层级';
+
+   const series = ops.map(([name, info], i) => ({
+     name, type: chartType === 'area' ? 'line' : chartType, data: info.daily, smooth: true,
+     symbol: 'circle', symbolSize: 5, lineStyle: { width: 2.5 },
+     areaStyle: chartType === 'area' ? { opacity: 0.15 } : undefined,
+     itemStyle: { color: COLORS[i % COLORS.length] },
+     emphasis: { focus: 'series', lineStyle: { width: 5 } }
+   }));
+
+   chart.setOption({
+     tooltip: { trigger: 'axis', formatter: makeTooltip },
+     legend: { data: ops.map(([n])=>n), textStyle: { fontSize: 11, color: '#666' }, top: 5 },
+     grid: { left: '3%', right: '3%', bottom: '10%', top: '50px', containLabel: true },
+     xAxis: { type: 'category', data: dates, axisLabel: { color: '#888', fontSize: 11, rotate: 45 }, axisLine: { lineStyle: { color: '#ddd' } } },
+     yAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => fmt(v) }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+     series,
+     dataZoom: [
+       { type: 'inside', start: 0, end: 100 },
+       { type: 'slider', start: 0, end: 100, height: 20, bottom: 5, borderColor: '#ddd', fillerColor: 'rgba(102,126,234,0.15)', handleStyle: { color: '#667eea' }, textStyle: { color: '#888' } }
+     ]
+   }, true);
+   chart.off('dblclick');
+   chart.on('dblclick', p => { if (p.seriesName && gi.operators[p.seriesName]) drillToOperator(p.seriesName); });
+
+   const cv = calcCV(gi.daily);
+   document.getElementById('statsBar').innerHTML = `
+     <div class="stat-card"><div class="stat-value">¥${fmt(gi.total)}</div><div class="stat-label">小组总流水</div></div>
+     <div class="stat-card"><div class="stat-value">¥${fmt(gi.total/30)}</div><div class="stat-label">日均流水</div></div>
+     <div class="stat-card"><div class="stat-value">${ops.length}</div><div class="stat-label">运营人数</div></div>
+     <div class="stat-card"><div class="stat-value">${cv.toFixed(1)}%</div><div class="stat-label">组波动率</div></div>`;
+ }
+
+ // ============ Level 2: Operator ============
+ function drillToOperator(opName) {
+   currentLevel = 'operator'; currentOperator = opName; highlightedSeries = null;
+   const oi = DATA.groups[currentGroup].operators[opName];
+   const anchors = Object.entries(oi.anchors).sort((a,b) => b[1].total - a[1].total);
+   const dates = DATA.dates.map(fmtDate);
+
+   let sb = `<div class="sidebar-title">🎤 ${opName} · 主播列表</div>`;
+   anchors.forEach(([key, info]) => {
+     const cv = calcCV(info.daily);
+     const b = cvBadge(cv);
+     const days = info.daily.filter(v => v > 0).length;
+     const shortId = info.id.length > 10 ? info.id.slice(0,10)+'...' : info.id;
+     sb += `<div class="sidebar-item" onclick="highlightAnchor('${key.replace(/'/g,"\\'")}')">
+       <div><div class="name">${info.name}</div>
+       <div class="sub-id" title="${info.id}">ID: ${shortId}</div>
+       <div class="value">¥${fmt(info.total)} · ${days}天 · CV ${cv.toFixed(0)}%</div></div>
+       <span class="badge ${b.cls}">${b.text}</span></div>`;
+   });
+   document.getElementById('sidebar').innerHTML = sb;
+
+   document.getElementById('breadcrumb').innerHTML = `
+     <span class="breadcrumb-item" onclick="renderBranchLevel()">🏢 成都第二</span>
+     <span class="breadcrumb-sep">›</span>
+     <span class="breadcrumb-item" onclick="drillToGroup('${currentGroup.replace(/'/g,"\\'")}')">👥 ${currentGroup}</span>
+     <span class="breadcrumb-sep">›</span>
+     <span class="breadcrumb-item active">👤 ${opName}</span>`;
+   document.getElementById('chartTitle').textContent = `${currentGroup} · ${opName} · 各主播每日流水`;
+   document.getElementById('chartDesc').textContent = '点击左侧主播高亮显示 · 双击图表取消高亮';
+
+   const maxShow = 15;
+   const show = anchors.slice(0, maxShow);
+   const rest = anchors.slice(maxShow);
+
+   const series = show.map(([key, info], i) => ({
+     name: info.name, type: chartType === 'area' ? 'line' : chartType, data: info.daily, smooth: true,
+     symbol: 'circle', symbolSize: 5, lineStyle: { width: 2 },
+     areaStyle: chartType === 'area' ? { opacity: 0.1 } : undefined,
+     itemStyle: { color: COLORS[i % COLORS.length] },
+     emphasis: { focus: 'series', lineStyle: { width: 5 } }
+   }));
+
+   if (rest.length > 0) {
+     const otherDaily = DATA.dates.map((_, i) => rest.reduce((s, [, info]) => s + info.daily[i], 0));
+     series.push({
+       name: `其他(${rest.length}人)`, type: 'line', data: otherDaily.map(v => Math.round(v*100)/100),
+       smooth: true, symbol: 'none', lineStyle: { width: 1.5, type: 'dashed' },
+       itemStyle: { color: '#bbb' }, emphasis: { focus: 'series' }
+     });
+   }
+
+   chart.setOption({
+     tooltip: {
+       trigger: 'axis',
+       formatter: function(params) {
+         let h = `<div style="font-weight:600;margin-bottom:6px">${params[0].name}</div>`;
+         const s = [...params].sort((a,b) => b.value - a.value).filter(p => p.value > 0);
+         s.slice(0, 10).forEach(p => {
+           // Find anchor info for ID tooltip
+           const aEntry = anchors.find(([k, info]) => info.name === p.seriesName);
+           const idStr = aEntry ? ` (${aEntry[1].id})` : '';
+           h += `<div style="display:flex;justify-content:space-between;gap:14px;margin:2px 0;font-size:13px">
+             <span>${p.marker} ${p.seriesName}<span style="color:#aaa;font-size:11px">${idStr}</span></span>
+             <span style="font-weight:600">¥${p.value.toLocaleString()}</span></div>`;
+         });
+         if (s.length > 10) h += `<div style="color:#999;margin-top:4px">...还有 ${s.length-10} 人</div>`;
+         return h;
+       }
+     },
+     legend: { data: series.map(s => s.name), textStyle: { fontSize: 10, color: '#666' }, top: 5, type: 'scroll' },
+     grid: { left: '3%', right: '3%', bottom: '10%', top: '50px', containLabel: true },
+     xAxis: { type: 'category', data: dates, axisLabel: { color: '#888', fontSize: 11, rotate: 45 }, axisLine: { lineStyle: { color: '#ddd' } } },
+     yAxis: { type: 'value', axisLabel: { color: '#888', formatter: v => fmt(v) }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+     series,
+     dataZoom: [
+       { type: 'inside', start: 0, end: 100 },
+       { type: 'slider', start: 0, end: 100, height: 20, bottom: 5, borderColor: '#ddd', fillerColor: 'rgba(102,126,234,0.15)', handleStyle: { color: '#667eea' }, textStyle: { color: '#888' } }
+     ]
+   }, true);
+   chart.off('dblclick');
+   chart.on('dblclick', () => { highlightedSeries = null; chart.dispatchAction({ type: 'downplay' }); });
+
+   const ac = anchors.length;
+   const cv = calcCV(oi.daily);
+   document.getElementById('statsBar').innerHTML = `
+     <div class="stat-card"><div class="stat-value">¥${fmt(oi.total)}</div><div class="stat-label">运营总流水</div></div>
+     <div class="stat-card"><div class="stat-value">${ac}</div><div class="stat-label">主播数</div></div>
+     <div class="stat-card"><div class="stat-value">¥${fmt(oi.total/ac)}</div><div class="stat-label">人均流水</div></div>
+     <div class="stat-card"><div class="stat-value">${cv.toFixed(1)}%</div><div class="stat-label">波动率</div></div>`;
+ }
+
+ function highlightAnchor(key) {
+   const info = (() => {
+     const ops = DATA.groups[currentGroup].operators[currentOperator];
+     return ops.anchors[key];
+   })();
+   if (!info) return;
+   if (highlightedSeries === info.name) {
+     highlightedSeries = null;
+     chart.dispatchAction({ type: 'downplay' });
+     return;
+   }
+   highlightedSeries = info.name;
+   chart.dispatchAction({ type: 'downplay' });
+   chart.dispatchAction({ type: 'highlight', seriesName: info.name });
+ }
+
+ function setChartType(type) {
+   chartType = type;
+   document.querySelectorAll('.chart-actions button').forEach(b => b.classList.remove('active'));
+   document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+   if (currentLevel === 'branch') renderBranchLevel();
+   else if (currentLevel === 'group') drillToGroup(currentGroup);
+   else if (currentLevel === 'operator') drillToOperator(currentOperator);
+ }
+ </script>
+</body>
+</html>
